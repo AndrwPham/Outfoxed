@@ -1,5 +1,6 @@
 package org.outfoxedfinal.entity;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -21,5 +22,11 @@ public class Thief {
 
     public boolean isThief(Suspect accused) {
         return thief != null && thief.equals(accused);
+    }
+    public List<String> getThiefItems() {
+        if (thief == null) {
+            throw new IllegalStateException("Thief has not been initialized");
+        }
+        return Arrays.asList(thief.getItems()); // Assuming `getItems()` returns an array of strings
     }
 }

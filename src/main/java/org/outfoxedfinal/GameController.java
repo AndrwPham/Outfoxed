@@ -2,6 +2,7 @@ package org.outfoxedfinal;
 
 
 import javafx.application.Platform;
+import javafx.stage.Modality;
 import org.outfoxedfinal.entity.Suspect;
 import org.outfoxedfinal.entity.Thief;
 import javafx.scene.Scene;
@@ -12,6 +13,7 @@ import javafx.stage.Stage;
 import java.util.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import org.outfoxedfinal.logic.Decoder;
 import org.outfoxedfinal.logic.DiceController;
 
 public class GameController {
@@ -20,6 +22,7 @@ public class GameController {
     private int selectedSuspectsCount = 0;
     private boolean movementMode = false;
     private final DiceController diceController;
+    private Thief thief;
 
     public GameController(GameMap gameMap, KeyHandler keyHandler,DiceController diceController) {
         this.gameMap = gameMap;
@@ -27,7 +30,7 @@ public class GameController {
         this.diceController = diceController;
         keyHandler.setGameController(this);
         diceController.setGameController(this);
-        Thief thief = new Thief();
+        this.thief = new Thief();
         thief.selectThief(gameMap.getSuspects());
         gameMap.setThief(thief.getThief()); // Pass the selected thief to the GameMap
     }
@@ -92,46 +95,6 @@ public class GameController {
         }
     }
 
-    public void returnToGameScene() {
-        Platform.runLater(() -> {
-            try {
-                if (gameMap.getMapGrid() == null) {
-                    System.err.println("GridPane from gameMap is null. Cannot return to game scene.");
-                    return;
-                }
-
-                Scene gameScene = gameMap.getMapGrid().getScene();
-                if (gameScene == null) {
-                    System.err.println("Game scene is not attached to the GridPane.");
-                    return;
-                }
-
-                Stage primaryStage = (Stage) gameScene.getWindow();
-                if (primaryStage == null) {
-                    System.err.println("Primary stage is not set for the game scene.");
-                    return;
-                }
-
-                primaryStage.setScene(gameScene);
-                // handleKeyPress(gameScene); // Reattach key handler
-                primaryStage.requestFocus(); // Ensure window focus
-            } catch (NullPointerException e) {
-                System.err.println("Error in returnToGameScene: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
-
-
-//    protected void checkForClueEncounter(int currentRow, int currentCol) {
-//        for (int[] clueLocation : gameMap.getClueLocations()) {
-//            if (clueLocation[0] == currentRow && clueLocation[1] == currentCol) {
-//                System.out.println("Clue found at (" + currentRow + ", " + currentCol + ")");
-//                showClueSelectionScene();
-//                break;
-//            }
-//        }
-//    }
 
     public void accuseSuspect(Suspect suspect) {
         if (!suspect.isRevealed()) {
@@ -175,6 +138,26 @@ public class GameController {
             keyHandler.setRemainingMoves(moves);
         } else {
             System.out.println("Dice roll failed. No moves available.");
+        }
+    }
+    public void onClueEncounter(int row, int col) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Decoder.fxml"));
+            Scene scene = new Scene(loader.load());
+
+            // Pass clue information to the Decoder controller
+            Decoder decoder = loader.getController();
+            decoder.setClueItems(gameMap.getClueItemsAtLocation(row, col));
+            decoder.setThiefItems(thief.getThiefItems()); // Ensure thiefItems is passed
+
+            // Show the Decoder GUI
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(scene);
+            stage.setTitle("Clue Decoder");
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

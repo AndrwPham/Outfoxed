@@ -93,10 +93,12 @@ class KeyHandler {
     private void checkForClueEncounter() {
         if (gameMap.isClueLocation(currentRow, currentCol)) {
             System.out.println("Clue encountered at row " + currentRow + ", column " + currentCol);
-//            if (gameController != null) {
-//                gameController.onClueEncounter(currentRow, currentCol);
-//            }
+            if (gameController != null) {
+                gameController.onClueEncounter(currentRow, currentCol);
+            }
         }
     }
+
 }
+
 

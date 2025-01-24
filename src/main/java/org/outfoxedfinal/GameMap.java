@@ -160,5 +160,11 @@ public class GameMap {
             }
         }
     }
+    public List<String> getClueItemsAtLocation(int row, int col) {
+        // Example logic: return all items at the location
+        // Replace with your own logic to get the clue items for the specified location
+        return List.of("umbrella", "gloves", "hat","glasses","1 eye glasses",
+                "scarf","clock","stick","jewelry","bag","flower","cloak"); // Example items
+    }
 
 }

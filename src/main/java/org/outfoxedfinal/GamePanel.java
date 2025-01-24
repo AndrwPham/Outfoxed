@@ -1,6 +1,7 @@
 package org.outfoxedfinal;
 //This is for the GameGUI and the game loop
 
+import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -124,5 +125,4 @@ public class GamePanel {
 
         return scene;
     }
-
 }
