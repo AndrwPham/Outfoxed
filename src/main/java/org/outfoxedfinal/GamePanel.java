@@ -123,6 +123,44 @@ public class GamePanel {
         Scene scene = new Scene(root, 900, 750);
         gameController.handleKeyPress(scene);
 
+        new AnimationTimer() {
+            long lastTick = 0;
+            public void handle(long now) {
+                // Check if sufficient time has passed since the last update
+                if (lastTick == 0) {
+                    lastTick = now;
+                    return;
+                }
+
+                // Time elapsed in nanoseconds
+                long elapsedTime = now - lastTick;
+
+                // Update interval (e.g., 16ms for ~60FPS)
+                if (elapsedTime > 16_000_000) {
+                    lastTick = now;
+
+                    // Game logic here
+                    // ------------------------------------------------
+                    // 1. Update game state:
+                    //    - Update characters
+                    //    - Check for interactions (e.g., suspects or clues)
+                    gameController.updateGameLogic();
+                    // 3. Check game conditions:
+                    //    - Determine if the game is over or needs to transition states
+//                    if (gameController.checkWinCondition()) {
+//                        stop();
+//                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "You win!", ButtonType.OK);
+//                        alert.showAndWait();
+//                        // Optionally reset or exit the game
+//                    }
+//
+//                    // 4. Render updates to the GUI:
+//                    //    - Update suspect cards or any visual elements
+//                    gameController.renderUpdates();
+//                    // ------------------------------------------------
+                }
+            }
+        }.start();
         return scene;
     }
 }

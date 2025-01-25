@@ -79,7 +79,8 @@ class KeyHandler {
 
             if (remainingMoves <= 0) {
                 System.out.println("No more moves left. Movement disabled.");
-                setMovementEnabled(false); // Disable movement if no moves remain
+                setMovementEnabled(false);// Disable movement if no moves remain
+                gameController.movingDone(remainingMoves);
             }
         }
     }

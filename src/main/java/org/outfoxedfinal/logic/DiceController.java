@@ -32,10 +32,16 @@ public class DiceController {
     private boolean keepDice1 = false;
     private boolean keepDice2 = false;
     private boolean keepDice3 = false;
-    private String[] validDice = {"dice1.jpg", "dice2.jpg", "dice5.jpg"}; // Valid dice for findingClues
+    private boolean actionDone = false;
+    private ActionType rolling = null;
+
 
     private int rollCount = 0; // Counter to track the number of rolls
     private static final int MAX_ROLLS = 3; // Maximum allowed rolls
+
+    public enum ActionType {
+        ROLL
+    }
 
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
@@ -60,6 +66,7 @@ public class DiceController {
 
     @FXML
     void roll() {
+        rolling = ActionType.ROLL;
         if (rollCount >= MAX_ROLLS) {
             rollButton.setDisable(true); // Disable the button if max rolls are reached
             return;
@@ -91,13 +98,27 @@ public class DiceController {
                 } else {
                     rollButton.setDisable(true); // Disable button if max rolls reached
                 }
-                if (isValidRoll()) {
-                    totalMoves = calculateMoves();
-                    System.out.println("Valid roll! Total moves: " + totalMoves);
-                    gameController.handleDiceRollResult(totalMoves);
-                } else {
-                    System.out.println("Invalid roll. Roll failed.");
+                if (currentAction.equals("find clue")) {
+                    if (isValidRoll()) {
+                        rollCount = MAX_ROLLS;
+                        totalMoves = calculateMoves();
+                        System.out.println("Valid roll! Total moves: " + totalMoves);
+                        gameController.handleDiceRollResult(totalMoves);
+                    } else if (rollCount == MAX_ROLLS) {
+                        System.out.println("No more rolls");
+                        actionDone = true;
+                    }
                 }
+                else if (currentAction.equals("reveal suspect")) {
+                    if (isValidRoll()) {
+                        rollCount = MAX_ROLLS;
+                        gameController.isSelectMode(false);
+                    }
+                    else if (rollCount == MAX_ROLLS) {
+                        actionDone = true;
+                    }
+                }
+                gameController.rollingDone(actionDone);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -117,18 +138,9 @@ public class DiceController {
         return false; // Re-roll this dice
     }
 
-    private boolean isDiceValid(ImageView diceView) {
-        String imageName = new File(diceView.getImage().getUrl()).getName();
-        for (String valid : validDice) {
-            if (imageName.equals(valid)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private boolean isValidRoll() {
-        return isDiceValid(diceImage) && isDiceValid(diceImage1) && isDiceValid(diceImage2);
+        return shouldKeep(diceImage) && shouldKeep(diceImage1) && shouldKeep(diceImage2);
     }
 
     public int calculateMoves() {
@@ -141,9 +153,9 @@ public class DiceController {
 
     private int getMoveValue(ImageView diceView) {
         String imageName = new File(diceView.getImage().getUrl()).getName();
-        if ("dice1.jpg".equals(imageName)) return 100;
-        if ("dice2.jpg".equals(imageName)) return 200;
-        if ("dice5.jpg".equals(imageName)) return 100;
+        if ("dice1.jpg".equals(imageName)) return 1;
+        if ("dice2.jpg".equals(imageName)) return 2;
+        if ("dice5.jpg".equals(imageName)) return 1;
         return 0;
     }
 

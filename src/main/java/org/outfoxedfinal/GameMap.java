@@ -39,7 +39,7 @@ public class GameMap {
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
         System.out.println("GameController assigned to GameMap.");
-        recreateSuspectCards();
+        //recreateSuspectCards();
     }
 
 
@@ -52,7 +52,7 @@ public class GameMap {
     }
 
     public void recreateSuspectCards() {
-        setSuspectCardsEnabled(false); // Reset all cards to be non-clickable
+       // setSuspectCardsEnabled(false); // Reset all cards to be non-clickable
     }
 
     public List<Suspect> getSuspects() {
@@ -123,16 +123,20 @@ public class GameMap {
         Text card = new Text(suspect.isRevealed() ? suspect.getName() : "Suspect");
         card.setFont(new Font(20));
 
+        // Set appearance and functionality based on the isEnabled state
         if (isEnabled && !suspect.isRevealed()) {
+            card.setStyle("-fx-fill: black; -fx-opacity: 1;"); // Normal appearance
             card.setOnMouseClicked(event -> {
                 gameController.onSuspectSelected(card, suspect); // Use onSuspectSelected
             });
         } else {
-            card.setOnMouseClicked(null); // Remove click listener for revealed suspects
+            card.setStyle("-fx-fill: gray; -fx-opacity: 0.5;"); // Disabled appearance
+            card.setOnMouseClicked(null); // Remove click listener for disabled cards
         }
 
         return card;
     }
+
 
 
     private void initializeMap() {
@@ -146,20 +150,6 @@ public class GameMap {
         }
     }
 
-    public void setSuspectCardsEnabled(boolean enabled) {
-        int globalIndex = 0; // Global index for suspects
-        for (Pane container : List.of(
-                getTopSuspectCards(enabled),
-                getLeftSuspectCards(enabled),
-                getRightSuspectCards(enabled))) {
-            for (int i = 0; i < container.getChildren().size(); i++) {
-                Suspect suspect = suspects.get(globalIndex); // Use global index
-                Text newCard = createSuspectCard(suspect, enabled); // Pass the enabled parameter
-                container.getChildren().set(i, newCard); // Replace the old card
-                globalIndex++; // Increment the global index
-            }
-        }
-    }
     public List<String> getClueItemsAtLocation(int row, int col) {
         // Example logic: return all items at the location
         // Replace with your own logic to get the clue items for the specified location
