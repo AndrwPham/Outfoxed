@@ -15,14 +15,18 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.outfoxedfinal.entity.Suspect;
+import org.outfoxedfinal.entity.SuspectInitializer;
 import org.outfoxedfinal.logic.DiceController;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class GamePanel {
+
     public Scene createScene() {
         BorderPane root = new BorderPane();
+        StackPane stackPane = new StackPane();
+        stackPane.setPickOnBounds(false);
+        GameMap gameMap = new GameMap(18,18);
 
         Image img = new Image(getClass().getResource("map/map.png").toString());
         ImageView imgMap = new ImageView(img);
@@ -37,12 +41,13 @@ public class GamePanel {
         Text character = new Text("🎩");
         character.setFont(new Font(15));
 
-        Image foxIcon = new Image(getClass().getResource("fox/thief.jpg").toString()); // Ensure the file path is correct
+        Image foxIcon = new Image(getClass().getResource("fox/thief.png").toString()); // Ensure the file path is correct
         ImageView foxImageView = new ImageView(foxIcon);
 
         // Optional: Adjust icon size
-        foxImageView.setFitWidth(30);
-        foxImageView.setFitHeight(30);
+        foxImageView.setFitWidth(80);
+        foxImageView.setFitHeight(80);
+        gameMap.setFoxImageView(foxImageView);
         foxImageView.setTranslateX(xOffset - imgMap.getFitWidth() / 2); // Adjust relative to center
         foxImageView.setTranslateY(yOffset - imgMap.getFitHeight() / 2); // Adjust relative to center
 
@@ -52,37 +57,30 @@ public class GamePanel {
         StackPane.setAlignment(character, Pos.CENTER);
         mapContainer.getChildren().add(foxImageView);
 
-        GameMap gameMap = new GameMap(18,18);
-        //mapContainer.getChildren().addAll(gameMap.getMapGrid());
-        HBox topSuspects = gameMap.getTopSuspectCards(true);
         VBox leftSuspects = gameMap.getLeftSuspectCards(true);
         VBox rightSuspects = gameMap.getRightSuspectCards(true);
 
-       // StackPane.setAlignment(gameMap.getMapGrid(),Pos.CENTER);
         // Align suspect cards
-        topSuspects.setAlignment(Pos.CENTER);
         leftSuspects.setAlignment(Pos.CENTER);
         rightSuspects.setAlignment(Pos.CENTER);
 
         // Set spacing between cards
-        topSuspects.setSpacing(20);
         leftSuspects.setSpacing(20);
         rightSuspects.setSpacing(20);
 
         // Set padding to ensure equal spacing
-        BorderPane.setMargin(topSuspects, new Insets(20));
         BorderPane.setMargin(leftSuspects, new Insets(20));
         BorderPane.setMargin(rightSuspects, new Insets(20));
 
         // Add components to the BorderPane
         root.setCenter(mapContainer);
-        root.setTop(topSuspects);
+      //  root.setTop(topSuspects);
         root.setLeft(leftSuspects);
         root.setRight(rightSuspects);
 
         KeyHandler movementHandler = new KeyHandler(character, gameMap);
         DiceController diceController = new DiceController();
-        GameController gameController = new GameController(gameMap, movementHandler,diceController);
+        GameController gameController = new GameController(gameMap, movementHandler,diceController,stackPane);
         diceController.setGameController(gameController);
         gameMap.setGameController(gameController);
         movementHandler.setGameController(gameController);
@@ -113,16 +111,21 @@ public class GamePanel {
         StackPane bottomSection = new StackPane();
         VBox buttonContainer = new VBox(accuseButton);
         buttonContainer.setAlignment(Pos.BOTTOM_CENTER);
-        buttonContainer.setPadding(new Insets(10));
+        buttonContainer.setTranslateY(-30); // Move up by 30 pixels
+
         bottomSection.getChildren().add(buttonContainer);
 
         // Set the bottom section in the BorderPane
         root.setBottom(bottomSection);
         BorderPane.setAlignment(bottomSection, Pos.CENTER);
+        // Wrap everything inside another StackPane to allow overlays
+        StackPane mainLayout = new StackPane(root, stackPane);
 
-        Scene scene = new Scene(root, 900, 750);
+        Scene scene = new Scene(mainLayout, 900, 750);
         gameController.handleKeyPress(scene);
+        scene.getStylesheets().add(getClass().getResource("UIStyle.css").toExternalForm());
 
+        // The GameLoop
         new AnimationTimer() {
             long lastTick = 0;
             public void handle(long now) {
@@ -138,26 +141,7 @@ public class GamePanel {
                 // Update interval (e.g., 16ms for ~60FPS)
                 if (elapsedTime > 16_000_000) {
                     lastTick = now;
-
-                    // Game logic here
-                    // ------------------------------------------------
-                    // 1. Update game state:
-                    //    - Update characters
-                    //    - Check for interactions (e.g., suspects or clues)
                     gameController.updateGameLogic();
-                    // 3. Check game conditions:
-                    //    - Determine if the game is over or needs to transition states
-//                    if (gameController.checkWinCondition()) {
-//                        stop();
-//                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "You win!", ButtonType.OK);
-//                        alert.showAndWait();
-//                        // Optionally reset or exit the game
-//                    }
-//
-//                    // 4. Render updates to the GUI:
-//                    //    - Update suspect cards or any visual elements
-//                    gameController.renderUpdates();
-//                    // ------------------------------------------------
                 }
             }
         }.start();

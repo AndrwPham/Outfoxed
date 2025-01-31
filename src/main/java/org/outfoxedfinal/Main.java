@@ -28,9 +28,11 @@ public class Main extends Application {
         Pane root = new Pane();
         root.setPrefSize(900, 750);
 
-        Image bgImage = new Image(getClass().getResource("bg.jpg").toExternalForm());
+        Image bgImage = new Image(getClass().getResource("bg.gif").toExternalForm());
         ImageView img = new ImageView(bgImage);
-        VBox box = new VBox(5,new MenuItem("PLAY",this::showGamePanel),
+        img.setFitWidth(900);
+        img.setFitHeight(750);
+        VBox box = new VBox(5,new MenuItem("PLAY",this::showGameLoading),
                             new MenuItem("QUIT", Platform::exit)
                             );
         box.setBackground(new Background(new BackgroundFill(Color.web("white",0.5),null,null)));
@@ -79,9 +81,9 @@ public class Main extends Application {
         }
     }
 
-    private void showGamePanel() {
-        GamePanel gamePanel = new GamePanel();
-        Scene gameScene = gamePanel.createScene(); // Get the scene from GamePanel
+    private void showGameLoading() {
+        Loading gameLoad = new Loading(primaryStage);
+        Scene gameScene = new Scene(gameLoad.showLoadingScene()); // Get the scene from GamePanel
         primaryStage.setScene(gameScene); // Switch to the new scene
     }
 

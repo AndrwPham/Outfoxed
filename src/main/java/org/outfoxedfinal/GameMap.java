@@ -1,20 +1,27 @@
 package org.outfoxedfinal;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.outfoxedfinal.entity.Suspect;
 import org.outfoxedfinal.entity.SuspectInitializer;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 //This is the logic behind everything in the map
 
-public class GameMap {
+public class GameMap extends TilePane {
+    private ImageView foxImageView;
     private final List<int[]> clueLocations;
     private final int rows;
     private final int cols;
@@ -23,7 +30,9 @@ public class GameMap {
     private GameController gameController;
     private Suspect thief;
 
-
+    private Image cardBack;
+    private Map<String, Image> suspectImages = new HashMap<>();
+    private Map<String, ImageView> imageViewMap = new HashMap<>();
 
     public GameMap(int rows, int cols) {
         this.rows = rows;
@@ -34,7 +43,6 @@ public class GameMap {
         initializeMap();
         initializeClues();
     }
-
 
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
@@ -51,9 +59,6 @@ public class GameMap {
         return thief;
     }
 
-    public void recreateSuspectCards() {
-       // setSuspectCardsEnabled(false); // Reset all cards to be non-clickable
-    }
 
     public List<Suspect> getSuspects() {
         return this.suspects;
@@ -95,48 +100,89 @@ public class GameMap {
         return cols;
     }
 
-    public HBox getTopSuspectCards(boolean isEnabled) {
-        HBox top = new HBox(20);
-        for (int i = 0; i < 4; i++) {
-            top.getChildren().add(createSuspectCard(suspects.get(i), isEnabled));
-        }
-        return top;
-    }
-
     public VBox getLeftSuspectCards(boolean isEnabled) {
         VBox left = new VBox(20);
-        for (int i = 4; i < 8; i++) {
-            left.getChildren().add(createSuspectCard(suspects.get(i), isEnabled));
+        for (int i = 0; i < 6; i++) {
+            left.getChildren().add(createSuspectCard(suspects.get(i), isEnabled,true));
         }
         return left;
     }
 
     public VBox getRightSuspectCards(boolean isEnabled) {
         VBox right = new VBox(20);
-        for (int i = 8; i < 12; i++) {
-            right.getChildren().add(createSuspectCard(suspects.get(i), isEnabled));
+        for (int i = 6; i < 12; i++) {
+            right.getChildren().add(createSuspectCard(suspects.get(i), isEnabled,false ));
         }
         return right;
     }
 
-    public Text createSuspectCard(Suspect suspect, boolean isEnabled) {
-        Text card = new Text(suspect.isRevealed() ? suspect.getName() : "Suspect");
-        card.setFont(new Font(20));
+    public HBox createSuspectCard(Suspect suspect, boolean isEnabled, boolean isLeftSide) {
+        // Create ImageView for suspect card
+        ImageView suspectImage = new ImageView();
 
-        // Set appearance and functionality based on the isEnabled state
-        if (isEnabled && !suspect.isRevealed()) {
-            card.setStyle("-fx-fill: black; -fx-opacity: 1;"); // Normal appearance
-            card.setOnMouseClicked(event -> {
-                gameController.onSuspectSelected(card, suspect); // Use onSuspectSelected
-            });
+        // Function to update the suspect image dynamically
+        Runnable updateImage = () -> {
+            String imagePath = suspect.isRevealed()
+                    ? "suspects/" + suspect.getName().toLowerCase() + ".png"
+                    : "suspects/suspect.png";
+
+            Image image = new Image(getClass().getResourceAsStream(imagePath));
+            suspectImage.setImage(image);
+        };
+
+        // Load initial image
+        updateImage.run();
+        suspectImage.setFitWidth(50); // Adjust width
+        suspectImage.setFitHeight(100); // Adjust height
+
+        // Create suspect name text
+        Text cardText = new Text(suspect.isRevealed() ? suspect.getName() : "");
+        cardText.setFont(new Font(12));
+
+        // Arrange elements (Text on left or right)
+        HBox cardLayout = new HBox(10); // Horizontal spacing
+        if (isLeftSide) {
+            cardLayout.getChildren().addAll(suspectImage, cardText); // Text on the right
+            cardLayout.setAlignment(Pos.CENTER_LEFT);
         } else {
-            card.setStyle("-fx-fill: gray; -fx-opacity: 0.5;"); // Disabled appearance
-            card.setOnMouseClicked(null); // Remove click listener for disabled cards
+            cardLayout.getChildren().addAll(cardText, suspectImage); // Text on the left
+            cardLayout.setAlignment(Pos.CENTER_RIGHT);
         }
+        suspectImage.setOnMouseClicked(event -> {
+            if (!suspect.isRevealed() && isEnabled) {
+                if (gameController.getSelectedSuspectsCount() < 2) {
+                    gameController.onSuspectSelected(cardText, suspect);
+                    suspect.setRevealed(true);
+                    updateImage.run(); // Refresh image
+                    cardText.setText(suspect.getName());
+                    gameController.incrementSelectedSuspectsCount(); // Track selections
+                } else {
+                    System.out.println("Only two suspects can be revealed!");
+                }
+            } else {
+                showZoomedImage(suspectImage); // Zoom in when revealed
+            }
+        });
 
-        return card;
+        return cardLayout;
     }
 
+    private void showZoomedImage(ImageView suspectImage) {
+        Stage zoomStage = new Stage();
+        zoomStage.initModality(Modality.APPLICATION_MODAL);
+        zoomStage.setTitle("Suspect Zoomed View");
+
+        // Clone image and enlarge
+        ImageView zoomedImage = new ImageView(suspectImage.getImage());
+        zoomedImage.setFitWidth(300); // Zoomed size
+        zoomedImage.setFitHeight(450);
+
+        StackPane root = new StackPane(zoomedImage);
+        Scene scene = new Scene(root, 320, 480);
+
+        zoomStage.setScene(scene);
+        zoomStage.show();
+    }
 
 
     private void initializeMap() {
@@ -155,6 +201,21 @@ public class GameMap {
         // Replace with your own logic to get the clue items for the specified location
         return List.of("umbrella", "gloves", "hat","glasses","1 eye glasses",
                 "scarf","clock","stick","jewelry","bag","flower","cloak"); // Example items
+    }
+
+    public void setFoxImageView(ImageView foxImageView) {
+        this.foxImageView = foxImageView;
+    }
+
+    public ImageView getFoxImageView() {
+        return foxImageView;
+    }
+
+    public void updateFoxPosition(double xOffset, double yOffset) {
+        if (foxImageView != null) {
+            foxImageView.setTranslateX(xOffset - 650 / 2);
+            foxImageView.setTranslateY(yOffset - 650 / 2);
+        }
     }
 
 }
