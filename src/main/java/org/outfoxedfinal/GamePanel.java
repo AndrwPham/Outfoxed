@@ -21,11 +21,14 @@ import org.outfoxedfinal.logic.DiceController;
 import java.util.*;
 
 public class GamePanel {
+    private final List<Text> players = new ArrayList<>();
+    private int currentPlayerIndex = 0; // Tracks the current player's turn
 
     public Scene createScene() {
         BorderPane root = new BorderPane();
-        StackPane stackPane = new StackPane();
-        stackPane.setPickOnBounds(false);
+        StackPane overlayContainer = new StackPane();
+
+        overlayContainer.setPickOnBounds(false);
         GameMap gameMap = new GameMap(18,18);
 
         Image img = new Image(getClass().getResource("map/map.png").toString());
@@ -37,9 +40,15 @@ public class GamePanel {
         double xOffset =  cellWidth * 1 + cellWidth / 2; // Column index 0
         double yOffset = cellHeight * 0 + cellHeight / 2; // Row index 1 // Row index 1
         imgMap.setPreserveRatio(true);
-
-        Text character = new Text("🎩");
-        character.setFont(new Font(15));
+        int[][] playerPositions = {{9, 9}, {8, 9}, {8, 8}, {9, 8}};
+        int numPlayers = 4;
+        for (int i = 0; i < numPlayers; i++) {
+            Text player = new Text("🎩");
+            player.setFont(new Font(15));
+            player.setTranslateX((playerPositions[i][1] * cellWidth) - imgMap.getFitWidth() / 2);
+            player.setTranslateY((playerPositions[i][0] * cellHeight) - imgMap.getFitHeight() / 2);
+            players.add(player);
+        }
 
         Image foxIcon = new Image(getClass().getResource("fox/thief.png").toString()); // Ensure the file path is correct
         ImageView foxImageView = new ImageView(foxIcon);
@@ -53,8 +62,9 @@ public class GamePanel {
 
         StackPane mapContainer = new StackPane(imgMap);
         mapContainer.setPrefSize(550, 550);
-        mapContainer.getChildren().add(character);
-        StackPane.setAlignment(character, Pos.CENTER);
+        for (Text player : players) {
+            mapContainer.getChildren().add(player);
+        }
         mapContainer.getChildren().add(foxImageView);
 
         VBox leftSuspects = gameMap.getLeftSuspectCards(true);
@@ -74,13 +84,14 @@ public class GamePanel {
 
         // Add components to the BorderPane
         root.setCenter(mapContainer);
-      //  root.setTop(topSuspects);
         root.setLeft(leftSuspects);
         root.setRight(rightSuspects);
 
-        KeyHandler movementHandler = new KeyHandler(character, gameMap);
+        KeyHandler movementHandler = new KeyHandler(players, gameMap);
         DiceController diceController = new DiceController();
-        GameController gameController = new GameController(gameMap, movementHandler,diceController,stackPane);
+        OverlayManager overlayManager = new OverlayManager(overlayContainer);
+        GameController gameController = new GameController(gameMap, movementHandler, diceController, overlayManager);
+
         diceController.setGameController(gameController);
         gameMap.setGameController(gameController);
         movementHandler.setGameController(gameController);
@@ -119,7 +130,7 @@ public class GamePanel {
         root.setBottom(bottomSection);
         BorderPane.setAlignment(bottomSection, Pos.CENTER);
         // Wrap everything inside another StackPane to allow overlays
-        StackPane mainLayout = new StackPane(root, stackPane);
+        StackPane mainLayout = new StackPane(root, overlayContainer);
 
         Scene scene = new Scene(mainLayout, 900, 750);
         gameController.handleKeyPress(scene);
@@ -128,6 +139,7 @@ public class GamePanel {
         // The GameLoop
         new AnimationTimer() {
             long lastTick = 0;
+            long delay = 500000000;
             public void handle(long now) {
                 // Check if sufficient time has passed since the last update
                 if (lastTick == 0) {
@@ -135,13 +147,13 @@ public class GamePanel {
                     return;
                 }
 
-                // Time elapsed in nanoseconds
+                // Time elapsed since last update
                 long elapsedTime = now - lastTick;
 
-                // Update interval (e.g., 16ms for ~60FPS)
-                if (elapsedTime > 16_000_000) {
-                    lastTick = now;
-                    gameController.updateGameLogic();
+                // Only update if at least 500ms have passed
+                if (elapsedTime > delay) {
+                    lastTick = now; // Update last tick time
+                    gameController.updateGameLogic(); // Call the game logic update
                 }
             }
         }.start();

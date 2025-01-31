@@ -33,6 +33,7 @@ public class DiceController {
     private boolean keepDice2 = false;
     private boolean keepDice3 = false;
     private boolean actionDone = false;
+    private boolean rollingDone = false;
     private ActionType rolling = null;
 
 
@@ -104,21 +105,27 @@ public class DiceController {
                         totalMoves = calculateMoves();
                         System.out.println("Valid roll! Total moves: " + totalMoves);
                         gameController.handleDiceRollResult(totalMoves);
+                        rollingDone = true;
                     } else if (rollCount == MAX_ROLLS) {
                         System.out.println("No more rolls");
                         actionDone = true;
+                        rollingDone = true;
                     }
                 }
                 else if (currentAction.equals("reveal suspect")) {
                     if (isValidRoll()) {
                         rollCount = MAX_ROLLS;
-                        gameController.isSelectMode(false);
+                        gameController.resetSelection();
+                       // gameController.isSelectMode(false);
+                        rollingDone = true;
                     }
                     else if (rollCount == MAX_ROLLS) {
                         actionDone = true;
+                        rollingDone = true;
                     }
                 }
-                gameController.rollingDone(actionDone);
+                gameController.actionDone(actionDone);
+                gameController.rollingDone(rollingDone);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

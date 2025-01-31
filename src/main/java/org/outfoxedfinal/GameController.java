@@ -2,7 +2,6 @@ package org.outfoxedfinal;
 
 
 import javafx.application.Platform;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,28 +25,25 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-
 
 public class GameController {
-    private final StackPane stackPane;
+    private final OverlayManager overlayManager;
     private final GameMap gameMap;
     private final KeyHandler keyHandler;
     private int selectedSuspectsCount = 0;
-    private boolean selectMode = false;
     private final DiceController diceController;
     private Thief thief;
     private int move = -1;
-    public boolean rollingDone = false;
     private boolean movingDone = false;
+    private boolean rollingDone = false;
+    private boolean actionDone = false;
+    private boolean actionPrompt = false;
 
-    public GameController(GameMap gameMap, KeyHandler keyHandler,DiceController diceController,StackPane stackPane) {
+    public GameController(GameMap gameMap, KeyHandler keyHandler,DiceController diceController,OverlayManager overlayManager) {
         this.gameMap = gameMap;
         this.keyHandler = keyHandler;
         this.diceController = diceController;
-        this.stackPane = stackPane;
+        this.overlayManager = overlayManager;
         keyHandler.setGameController(this);
         diceController.setGameController(this);
         this.thief = new Thief();
@@ -65,11 +61,6 @@ public class GameController {
 
     public void showActionPrompt() {
         Platform.runLater(() -> {
-            // Create an overlay background
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-            overlay.setPrefSize(300, 300);
-
             // Title text
             Text title = new Text("Choose an Action");
             title.setFont(new Font(30));
@@ -83,7 +74,7 @@ public class GameController {
             revealButton.setOnMouseExited(e -> revealButton.setStyle("-fx-background-color: white; -fx-text-fill: black;"));
             revealButton.setOnAction(e -> {
                 showDiceGUI("reveal suspect");
-                removeOverlay(overlay);
+                overlayManager.removeOverlay(); // Remove overlay when action is selected
             });
 
             // Find Clue button
@@ -94,7 +85,7 @@ public class GameController {
             clueButton.setOnMouseExited(e -> clueButton.setStyle("-fx-background-color: white; -fx-text-fill: black;"));
             clueButton.setOnAction(e -> {
                 showDiceGUI("find clue");
-                removeOverlay(overlay);
+                overlayManager.removeOverlay();
             });
 
             // Cancel button
@@ -103,36 +94,21 @@ public class GameController {
             cancelButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
             cancelButton.setOnMouseEntered(e -> cancelButton.setStyle("-fx-background-color: darkred; -fx-text-fill: white;"));
             cancelButton.setOnMouseExited(e -> cancelButton.setStyle("-fx-background-color: red; -fx-text-fill: white;"));
-            cancelButton.setOnAction(e -> removeOverlay(overlay));
+            cancelButton.setOnAction(e -> overlayManager.removeOverlay());
 
             // Arrange buttons in a vertical box
             VBox vbox = new VBox(20, title, revealButton, clueButton, cancelButton);
             vbox.setAlignment(Pos.CENTER);
-            //vbox.setBackground(new Background(new BackgroundFill(Color.DARKSLATEGRAY, new CornerRadii(10), Insets.EMPTY)));
 
-            // Add components to overlay
-            overlay.getChildren().add(vbox);
-            overlay.setAlignment(Pos.CENTER);
-            if (stackPane != null) {
-                stackPane.getChildren().add(overlay);
-            } else {
-                System.out.println("overlayContainer is null! Ensure GamePanel passes it correctly.");
-            }
+            // Create an overlay using overlayManager
+            overlayManager.createOverlay(vbox);
         });
     }
 
-    // Helper method to remove the overlay
-    private void removeOverlay(StackPane overlay) {
-        if (stackPane != null) {
-            stackPane.getChildren().remove(overlay);
-        }
-    }
-
-
     public void resetSelection() {
-        selectedSuspectsCount = 2; // Reset the count
+        selectedSuspectsCount = 0; // Reset the count
         System.out.println("Selection reset. Prompting for next action...");
-        selectMode = true;
+        actionPrompt = false;
     }
 
     public void onSuspectSelected(Text card, Suspect suspect) {
@@ -142,7 +118,7 @@ public class GameController {
         }
 
         if (selectedSuspectsCount <= 2) {
-
+            selectedSuspectsCount++;
             System.out.println("Revealed suspect: " + suspect.getName());
             // If two suspects have been revealed, enforce the limit
             if (selectedSuspectsCount == 2) {
@@ -155,9 +131,6 @@ public class GameController {
 
     public int getSelectedSuspectsCount() {
         return selectedSuspectsCount;
-    }
-    public void incrementSelectedSuspectsCount() {
-        selectedSuspectsCount++;
     }
     public void accuseSuspect(Suspect suspect) {
         if (!suspect.isRevealed()) {
@@ -177,48 +150,43 @@ public class GameController {
     }
 
     private void showDiceGUI(String action) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Dice.fxml"));
-            Parent diceRoot = loader.load(); // Load FXML content
+        Platform.runLater(() -> {
+            try {
+                // Load the Dice.fxml layout
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("Dice.fxml"));
+                Parent diceRoot = loader.load(); // Load FXML content
 
-            // Get controller and set necessary values
-            DiceController diceController = loader.getController();
-            diceController.setAction(action);
-            diceController.setGameController(this);
+                // Get the DiceController and set necessary values
+                DiceController diceController = loader.getController();
 
-            // Wrap diceRoot inside an overlay
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);"); // Semi-transparent dark background
-            overlay.setPrefSize(900, 750);
-
-            // Center the loaded FXML content in the overlay
-            overlay.getChildren().add(diceRoot);
-            StackPane.setAlignment(diceRoot, Pos.CENTER);
-
-            // **Add overlay to the main game scene**
-            if (stackPane != null) {
-                stackPane.getChildren().add(overlay);
-            } else {
-                System.out.println("overlayContainer is null! Ensure GamePanel passes it correctly.");
-            }
-
-            // Remove overlay when dice rolling is completed
-            new Thread(() -> {
-                while (!rollingDone) {
-                    try {
-                        Thread.sleep(100); // Small delay to avoid CPU overload
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                diceController.setAction(action);
+                diceController.setGameController(this);
+                // ✅ Properly use overlayManager to create the overlay
+                overlayManager.createOverlay(diceRoot);
+                new Thread(() -> {
+                    while (!rollingDone) {
+                        try {
+                            Thread.sleep(100); // Small delay to avoid CPU overload
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-                if (rollingDone) {
-                    removeOverlay(overlay); // Remove overlay when rollingDone is true
-                }
-            }).start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+                    // ✅ Ensure UI changes run on JavaFX Application Thread
+                    Platform.runLater(() -> {
+                        overlayManager.removeOverlay(); // Remove dice overlay
+                        rollingDone = false; // Reset rolling state
+                        System.out.println("Dice overlay removed.");
+                    });
+
+                }).start();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Failed to load Dice.fxml.");
+            }
+        });
     }
+
     public void handleDiceRollResult(int moves) {
         move = moves;
         System.out.println("Dice roll result: " + move);
@@ -233,19 +201,13 @@ public class GameController {
     public void onClueEncounter(int row, int col) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Decoder.fxml"));
-            Scene scene = new Scene(loader.load());
+            Parent decoderRoot = loader.load();
 
-            // Pass clue information to the Decoder controller
             Decoder decoder = loader.getController();
             decoder.setClueItems(gameMap.getClueItemsAtLocation(row, col));
-            decoder.setThiefItems(thief.getThiefItems()); // Ensure thiefItems is passed
+            decoder.setThiefItems(thief.getThiefItems());
 
-            // Show the Decoder GUI
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(scene);
-            stage.setTitle("Clue Decoder");
-            stage.showAndWait();
+            overlayManager.createOverlay(decoderRoot);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -281,43 +243,43 @@ public class GameController {
             movingDone = true;
         }
     }
+    public boolean actionDone(boolean action){
+        System.out.println("actionDone: " + action);
+        actionDone = action;
+        return actionDone;
+    }
     public boolean rollingDone(boolean rolling){
         System.out.println("rollingDone: " + rolling);
         rollingDone = rolling;
         return rollingDone;
     }
-    public void isSelectMode(boolean select) {
-        selectMode = select;
-        System.out.println("isSelectMode: " + selectMode);
-    }
-    private boolean actionPrompt = false;
+
     //GameLoop
     public void updateGameLogic() {
         if (!actionPrompt && selectedSuspectsCount == 2) {
             actionPrompt = true;
             showActionPrompt();
         }
-        if (selectedSuspectsCount == 4){
-            actionPrompt = false;
-            resetSelection();
-        }
-        if (rollingDone) {
+        if (actionDone) {
             renderUpdates();
             actionPrompt = false;
-            rollingDone = false;
+            actionDone = false;
+            keyHandler.switchTurn();
         }
         if (movingDone){
             renderUpdates();
             actionPrompt = false;
             movingDone = false;
+            keyHandler.switchTurn();
 
         }
-        if (getLocation(14,17)){
-            System.out.println("You've lost");
-
-        }
+//        if (getLocation(14,17)){
+//            System.out.println("You've lost");
+//
+//        }
 
     }
+
     //Update UI
     public void renderUpdates() {
         // Define the sequence of positions (x,y) that the fox moves through:
@@ -352,11 +314,6 @@ public class GameController {
     }
 
     private void showGameEndOverlay(String suspectName, boolean isWinner) {
-        // Create a semi-transparent background
-        StackPane overlay = new StackPane();
-        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-        overlay.setPrefSize(900, 750);
-
         // Game result message
         Text message = new Text(isWinner
                 ? "🎉 YOU WIN! " + suspectName + " was the thief! 🎉"
@@ -364,12 +321,19 @@ public class GameController {
         message.setFont(new Font(30));
         message.setFill(Color.WHITE);
 
-        // Load an image
+        // Load an image based on result
         String imagePath = isWinner ? "win.jpg" : "lose.jpg";
-        Image image = new Image(getClass().getResource(imagePath).toExternalForm());
-        ImageView resultImage = new ImageView(image);
-        resultImage.setFitWidth(300); // Set desired image width
-        resultImage.setFitHeight(300); // Set desired image height
+        ImageView resultImage = new ImageView();
+
+        try {
+            Image image = new Image(getClass().getResource(imagePath).toExternalForm());
+            resultImage.setImage(image);
+            resultImage.setFitWidth(300); // Set desired image width
+            resultImage.setFitHeight(300); // Set desired image height
+        } catch (Exception e) {
+            System.out.println("Error loading image: " + imagePath);
+            e.printStackTrace();
+        }
 
         // Restart button
         Button restartButton = new Button("Restart Game");
@@ -377,24 +341,21 @@ public class GameController {
         restartButton.setStyle("-fx-background-color: white; -fx-text-fill: black;");
         restartButton.setOnMouseEntered(e -> restartButton.setStyle("-fx-background-color: gray; -fx-text-fill: white;"));
         restartButton.setOnMouseExited(e -> restartButton.setStyle("-fx-background-color: white; -fx-text-fill: black;"));
-        restartButton.setOnAction(event -> restartGame(overlay)); // Restart the game
+        restartButton.setOnAction(event -> {
+            restartGame();
+            overlayManager.removeOverlay(); // Remove overlay after restarting
+        });
 
         // Layout for message, image & button
         VBox vbox = new VBox(20, resultImage, message, restartButton);
         vbox.setAlignment(Pos.CENTER);
 
-        overlay.getChildren().add(vbox);
-        overlay.setAlignment(Pos.CENTER);
-
-        // **Add the overlay to overlayContainer, which sits inside BorderPane**
-        if (stackPane != null) {
-            stackPane.getChildren().add(overlay);
-        } else {
-            System.out.println("Overlay container is null! Ensure GamePanel passes it correctly.");
-        }
+        // **Use overlayManager to create the overlay**
+        overlayManager.createOverlay(vbox);
     }
 
-    private void restartGame(StackPane overlay) {
+
+    private void restartGame() {
 
     }
 

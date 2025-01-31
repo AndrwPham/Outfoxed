@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.*;
+import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
@@ -15,8 +16,16 @@ import javafx.scene.text.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import javafx.scene.control.*;
+import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
+
+
 public class Main extends Application {
     private Stage primaryStage;
+    private Pane root;
+    private StackPane overlayPane; // New overlay for instructions
+    private VBox instructionOverlay; // The actual instructions
     @Override
     public void start(Stage stage) throws Exception {
         this.primaryStage = stage;
@@ -25,23 +34,76 @@ public class Main extends Application {
     }
 
     private Parent createContent() {
-        Pane root = new Pane();
+        root = new Pane();
         root.setPrefSize(900, 750);
 
         Image bgImage = new Image(getClass().getResource("bg.gif").toExternalForm());
         ImageView img = new ImageView(bgImage);
         img.setFitWidth(900);
         img.setFitHeight(750);
-        VBox box = new VBox(5,new MenuItem("PLAY",this::showGameLoading),
-                            new MenuItem("QUIT", Platform::exit)
-                            );
-        box.setBackground(new Background(new BackgroundFill(Color.web("white",0.5),null,null)));
-        box.setTranslateX(375);
-        box.setTranslateY(650);
 
-        root.getChildren().addAll(img,box);
+        VBox menuBox = new VBox(5, new MenuItem("PLAY", this::showGameLoading),
+                new MenuItem("QUIT", Platform::exit));
+        menuBox.setBackground(new Background(new BackgroundFill(Color.web("white", 0.5), null, null)));
+        menuBox.setTranslateX(375);
+        menuBox.setTranslateY(650);
+
+        // **QUESTION MARK BUTTON**
+        Label questionMark = new Label("❓");
+        questionMark.setFont(Font.font("Arial", FontWeight.BOLD, 50)); // Bigger font for visibility
+        questionMark.setTextFill(Color.WHITE);
+        questionMark.setStyle("-fx-cursor: hand;");
+        questionMark.setOnMouseClicked(event -> toggleInstructions());
+
+        // **Question Mark Positioning**
+        questionMark.setTranslateX(820); // Adjust right alignment
+        questionMark.setTranslateY(20);  // Adjust top alignment
+
+        // **Overlay Pane (Initially Hidden)**
+        overlayPane = new StackPane();
+        overlayPane.setPrefSize(900, 750);
+        overlayPane.setVisible(false);
+
+        // **Instruction Overlay**
+        instructionOverlay = createInstructionOverlay();
+        overlayPane.getChildren().add(instructionOverlay);
+
+        root.getChildren().addAll(img, menuBox, questionMark, overlayPane);
         return root;
     }
+
+    private VBox createInstructionOverlay() {
+        VBox overlay = new VBox(10);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setPadding(new Insets(20));
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-border-color: white; -fx-border-width: 2px;");
+        overlay.setPrefSize(300, 250); // Smaller overlay
+
+        Text instructionTitle = new Text("📜 How to Play");
+        instructionTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        instructionTitle.setFill(Color.WHITE);
+
+        Label instructionText = new Label(
+                "🔹 Roll the dice to move around.\n" +
+                        "🔹 Collect clues to find the thief.\n" +
+                        "🔹 Work together to solve the mystery!\n"
+        );
+        instructionText.setWrapText(true);
+        instructionText.setTextFill(Color.WHITE);
+        instructionText.setFont(Font.font("Arial", 14));
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> overlayPane.setVisible(false)); // Hide the overlay when clicked
+
+        overlay.getChildren().addAll(instructionTitle, instructionText, closeButton);
+        return overlay;
+    }
+
+    // **Toggle Instructions Overlay**
+    private void toggleInstructions() {
+        overlayPane.setVisible(!overlayPane.isVisible());
+    }
+
     private static class MenuItem extends StackPane {
         MenuItem(String name, Runnable action) {
             LinearGradient gradient = new LinearGradient(

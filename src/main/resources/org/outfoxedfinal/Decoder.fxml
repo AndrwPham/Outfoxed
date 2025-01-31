@@ -1,68 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.shape.Box?>
 
-<AnchorPane prefHeight="501.0" prefWidth="734.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.outfoxedfinal.logic.Decoder">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.outfoxedfinal.logic.Decoder">
     <children>
-        <Box depth="100" height="100" width="100" />
-        <ImageView fx:id="clue1" fitHeight="107.0" fitWidth="109.0" layoutX="119.0" layoutY="66.0">
+        <ImageView fx:id="clue1" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="16.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue2" fitHeight="107.0" fitWidth="109.0" layoutX="119.0" layoutY="328.0">
+        <ImageView fx:id="clue2" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="278.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue3" fitHeight="107.0" fitWidth="109.0" layoutX="506.0" layoutY="328.0">
+        <ImageView fx:id="clue3" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="278.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue4" fitHeight="107.0" fitWidth="109.0" layoutX="376.0" layoutY="328.0">
+        <ImageView fx:id="clue4" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="278.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue5" fitHeight="107.0" fitWidth="109.0" layoutX="246.0" layoutY="328.0">
+        <ImageView fx:id="clue5" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="278.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue6" fitHeight="107.0" fitWidth="109.0" layoutX="506.0" layoutY="196.0">
+        <ImageView fx:id="clue6" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="146.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue7" fitHeight="107.0" fitWidth="109.0" layoutX="376.0" layoutY="196.0">
+        <ImageView fx:id="clue7" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="146.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue8" fitHeight="107.0" fitWidth="109.0" layoutX="246.0" layoutY="196.0">
+        <ImageView fx:id="clue8" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="146.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue9" fitHeight="107.0" fitWidth="109.0" layoutX="119.0" layoutY="196.0">
+        <ImageView fx:id="clue9" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="146.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue10" fitHeight="107.0" fitWidth="109.0" layoutX="506.0" layoutY="66.0">
+        <ImageView fx:id="clue10" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="16.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue11" fitHeight="107.0" fitWidth="109.0" layoutX="376.0" layoutY="66.0">
+        <ImageView fx:id="clue11" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="16.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>
         </ImageView>
-        <ImageView fx:id="clue12" fitHeight="107.0" fitWidth="109.0" layoutX="246.0" layoutY="66.0">
+        <ImageView fx:id="clue12" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="16.0">
             <image>
                 <Image url="@clue/unknown.jpg" />
             </image>

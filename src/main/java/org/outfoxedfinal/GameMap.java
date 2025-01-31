@@ -155,7 +155,6 @@ public class GameMap extends TilePane {
                     suspect.setRevealed(true);
                     updateImage.run(); // Refresh image
                     cardText.setText(suspect.getName());
-                    gameController.incrementSelectedSuspectsCount(); // Track selections
                 } else {
                     System.out.println("Only two suspects can be revealed!");
                 }
