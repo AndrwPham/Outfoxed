@@ -8,62 +8,62 @@
     <children>
         <ImageView fx:id="clue1" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="16.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue2" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="278.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue3" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="278.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue4" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="278.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue5" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="278.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue6" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="146.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue7" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="146.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue8" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="146.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue9" fitHeight="107.0" fitWidth="109.0" layoutX="52.0" layoutY="146.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue10" fitHeight="107.0" fitWidth="109.0" layoutX="439.0" layoutY="16.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue11" fitHeight="107.0" fitWidth="109.0" layoutX="309.0" layoutY="16.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
         <ImageView fx:id="clue12" fitHeight="107.0" fitWidth="109.0" layoutX="179.0" layoutY="16.0">
             <image>
-                <Image url="@clue/unknown.jpg" />
+                <Image url="@logic/unknown.jpg" />
             </image>
         </ImageView>
     </children>

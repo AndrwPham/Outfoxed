@@ -29,4 +29,5 @@ public class Thief {
         }
         return Arrays.asList(thief.getItems()); // Assuming `getItems()` returns an array of strings
     }
+
 }

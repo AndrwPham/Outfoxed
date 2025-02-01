@@ -2,6 +2,7 @@ package org.outfoxedfinal;
 //This is for the GameGUI and the game loop
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,15 +15,19 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import org.outfoxedfinal.entity.Suspect;
-import org.outfoxedfinal.entity.SuspectInitializer;
 import org.outfoxedfinal.logic.DiceController;
 
 import java.util.*;
 
 public class GamePanel {
     private final List<Text> players = new ArrayList<>();
-    private int currentPlayerIndex = 0; // Tracks the current player's turn
+    private int numPlayers;
+
+    public GamePanel(int numPlayers) {
+        this.numPlayers = numPlayers;
+    }
 
     public Scene createScene() {
         BorderPane root = new BorderPane();
@@ -41,7 +46,6 @@ public class GamePanel {
         double yOffset = cellHeight * 0 + cellHeight / 2; // Row index 1 // Row index 1
         imgMap.setPreserveRatio(true);
         int[][] playerPositions = {{9, 9}, {8, 9}, {8, 8}, {9, 8}};
-        int numPlayers = 4;
         for (int i = 0; i < numPlayers; i++) {
             Text player = new Text("🎩");
             player.setFont(new Font(15));
@@ -159,4 +163,5 @@ public class GamePanel {
         }.start();
         return scene;
     }
+
 }

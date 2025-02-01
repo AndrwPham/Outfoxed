@@ -1,8 +1,16 @@
 package org.outfoxedfinal.logic;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import org.outfoxedfinal.OverlayManager;
+import org.outfoxedfinal.GameController;
 import java.util.List;
 
 public class Decoder {
@@ -12,22 +20,21 @@ public class Decoder {
 
     private List<String> clueItems; // Clue items at the encountered location
     private List<String> thiefItems; // Items that belong to the thief
+    private OverlayManager overlayManager; // Overlay manager instance
+    private GameController gameController;
+    private boolean decodeDone = false;
 
     @FXML
     public void initialize() {
         // Add event handlers to each ImageView
-        clue1.setOnMouseClicked(event -> handleClueClick(0));
-        clue2.setOnMouseClicked(event -> handleClueClick(1));
-        clue3.setOnMouseClicked(event -> handleClueClick(2));
-        clue4.setOnMouseClicked(event -> handleClueClick(3));
-        clue5.setOnMouseClicked(event -> handleClueClick(4));
-        clue6.setOnMouseClicked(event -> handleClueClick(5));
-        clue7.setOnMouseClicked(event -> handleClueClick(6));
-        clue8.setOnMouseClicked(event -> handleClueClick(7));
-        clue9.setOnMouseClicked(event -> handleClueClick(8));
-        clue10.setOnMouseClicked(event -> handleClueClick(9));
-        clue11.setOnMouseClicked(event -> handleClueClick(10));
-        clue12.setOnMouseClicked(event -> handleClueClick(11));
+        ImageView[] clues = {clue1, clue2, clue3, clue4, clue5, clue6, clue7, clue8, clue9, clue10, clue11, clue12};
+
+        for (int i = 0; i < clues.length; i++) {
+            final int index = i;
+            if (clues[i] != null) {
+                clues[i].setOnMouseClicked(event -> handleClueClick(index));
+            }
+        }
     }
 
     public void setClueItems(List<String> clueItems) {
@@ -38,18 +45,66 @@ public class Decoder {
         this.thiefItems = thiefItems;
     }
 
+    public void setOverlayManager(OverlayManager overlayManager) {
+        this.overlayManager = overlayManager;
+    }
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
+    }
+
     private void handleClueClick(int index) {
+        if (clueItems == null || thiefItems == null || overlayManager == null) {
+            System.out.println("❌ Error: Missing required data (clueItems/thiefItems/overlayManager). Ensure they are set before clicking a clue.");
+            return;
+        }
         if (index >= clueItems.size()) {
-            return; // Ignore invalid clicks
+            System.out.println("❌ Error: Invalid clue selection index: " + index);
+            return;
         }
 
         String selectedClue = clueItems.get(index);
         boolean thiefHasItem = thiefItems.contains(selectedClue);
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Clue Result");
-        alert.setHeaderText("Clue: " + selectedClue);
-        alert.setContentText(thiefHasItem ? "The thief has this item!" : "The thief does not have this item.");
-        alert.showAndWait();
+        // Load Clue Image
+        ImageView clueImageView = new ImageView();
+        String imagePath =  selectedClue.toLowerCase().replace(" ", "") + ".png"; // Assuming clue images are stored here
+
+        try {
+            Image clueImage = new Image(getClass().getResource(imagePath).toExternalForm());
+            clueImageView.setImage(clueImage);
+        } catch (Exception e) {
+            System.out.println("⚠ Warning: Missing image for clue '" + selectedClue.toLowerCase().replace(" ", "") + "', using default.");
+            //clueImageView.setImage(new Image(getClass().getResource("/clues/default.png").toExternalForm())); // Fallback image
+        }
+
+        clueImageView.setFitWidth(150);
+        clueImageView.setFitHeight(150);
+
+        // Result Text
+        Text resultText = new Text(thiefHasItem
+                ? "✅ The thief has this item!"
+                : "❌ The thief does not have this item.");
+        resultText.setFont(new Font(22));
+        resultText.setFill(Color.WHITE);
+
+        // Close Button
+        Button closeButton = new Button("Close");
+        closeButton.setFont(new Font(16));
+        closeButton.setStyle("-fx-background-color: white; -fx-text-fill: black;");
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle("-fx-background-color: gray; -fx-text-fill: white;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle("-fx-background-color: white; -fx-text-fill: black;"));
+        closeButton.setOnAction(e -> {
+            overlayManager.removeOverlay();
+            gameController.isDecodeDone(true);
+        }); // Remove overlay when closed
+
+        // Layout for Clue Result
+        VBox clueResultBox = new VBox(15, clueImageView, resultText, closeButton);
+        clueResultBox.setAlignment(Pos.CENTER);
+        clueResultBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-padding: 20px; -fx-border-color: white; -fx-border-width: 2px;");
+
+        // Show the overlay
+        overlayManager.createOverlay(clueResultBox);
     }
+
 }

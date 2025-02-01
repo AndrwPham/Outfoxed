@@ -1,8 +1,6 @@
 package org.outfoxedfinal;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -15,6 +13,7 @@ import org.outfoxedfinal.entity.SuspectInitializer;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import org.outfoxedfinal.logic.Clue;
 
 import java.util.*;
 
@@ -22,7 +21,7 @@ import java.util.*;
 
 public class GameMap extends TilePane {
     private ImageView foxImageView;
-    private final List<int[]> clueLocations;
+    private final Clue clue;
     private final int rows;
     private final int cols;
     private final GridPane mapGrid;
@@ -39,9 +38,8 @@ public class GameMap extends TilePane {
         this.cols = cols;
         this.mapGrid = new GridPane();
         this.suspects = SuspectInitializer.initializeSuspects();
-        this.clueLocations = new ArrayList<>();
+        this.clue = new Clue(); // Initialize Clue object
         initializeMap();
-        initializeClues();
     }
 
     public void setGameController(GameController gameController) {
@@ -64,32 +62,17 @@ public class GameMap extends TilePane {
         return this.suspects;
     }
 
-    private void initializeClues() {
-        // Example: Add clues to specific locations
-        clueLocations.add(new int[]{2, 15});
-        clueLocations.add(new int[]{11, 11});
-        clueLocations.add(new int[]{7, 13});
-        clueLocations.add(new int[]{12, 7});
-        clueLocations.add(new int[]{11, 3});
-        clueLocations.add(new int[]{15, 3});
-        clueLocations.add(new int[]{15, 10});
-        clueLocations.add(new int[]{13, 14});
-        clueLocations.add(new int[]{3, 11});
-        clueLocations.add(new int[]{6, 6});
-        clueLocations.add(new int[]{5, 2});
-        clueLocations.add(new int[]{2, 4});
-    }
-
-    public List<int[]> getClueLocations() {
-        return clueLocations;
-    }
-
+    // Check if a specific position has a clue
     public boolean isClueLocation(int row, int col) {
-        return clueLocations.stream().anyMatch(loc -> loc[0] == row && loc[1] == col);
+        return clue.isClueLocation(row, col);
     }
 
-    public GridPane getMapGrid() {
-        return mapGrid;
+    public List<String> getClueItemsAtLocation(int row, int col) {
+        return clue.getClueItemsAtLocation(row, col);
+    }
+
+    public void deactivateClue(int row, int col) {
+        clue.deactivateClue(row, col);
     }
 
     public int getRows() {
@@ -193,13 +176,6 @@ public class GameMap extends TilePane {
                 mapGrid.add(cell, col, row);
             }
         }
-    }
-
-    public List<String> getClueItemsAtLocation(int row, int col) {
-        // Example logic: return all items at the location
-        // Replace with your own logic to get the clue items for the specified location
-        return List.of("umbrella", "gloves", "hat","glasses","1 eye glasses",
-                "scarf","clock","stick","jewelry","bag","flower","cloak"); // Example items
     }
 
     public void setFoxImageView(ImageView foxImageView) {

@@ -22,10 +22,11 @@ import javafx.geometry.Insets;
 
 
 public class Main extends Application {
-    private Stage primaryStage;
+    private static Stage primaryStage;
     private Pane root;
-    private StackPane overlayPane; // New overlay for instructions
-    private VBox instructionOverlay; // The actual instructions
+    private StackPane overlayPane; // Overlay for instructions
+    private VBox instructionOverlay;
+    private VBox menuBox;
     @Override
     public void start(Stage stage) throws Exception {
         this.primaryStage = stage;
@@ -33,7 +34,7 @@ public class Main extends Application {
         stage.show();
     }
 
-    private Parent createContent() {
+    Parent createContent() {
         root = new Pane();
         root.setPrefSize(900, 750);
 
@@ -42,16 +43,17 @@ public class Main extends Application {
         img.setFitWidth(900);
         img.setFitHeight(750);
 
-        VBox menuBox = new VBox(5, new MenuItem("PLAY", this::showGameLoading),
-                new MenuItem("QUIT", Platform::exit));
+        menuBox = new VBox(5, new MenuItem("   PLAY", this::showPlayerSelection),
+                new MenuItem("   QUIT", Platform::exit));
         menuBox.setBackground(new Background(new BackgroundFill(Color.web("white", 0.5), null, null)));
         menuBox.setTranslateX(375);
         menuBox.setTranslateY(650);
 
         // **QUESTION MARK BUTTON**
-        Label questionMark = new Label("❓");
-        questionMark.setFont(Font.font("Arial", FontWeight.BOLD, 50)); // Bigger font for visibility
-        questionMark.setTextFill(Color.WHITE);
+        Label questionMark = new Label("?");
+        questionMark.setFont(Font.font("Palatino Linotype", FontWeight.BOLD, 50));
+
+        questionMark.setTextFill(Color.BLACK);
         questionMark.setStyle("-fx-cursor: hand;");
         questionMark.setOnMouseClicked(event -> toggleInstructions());
 
@@ -80,19 +82,42 @@ public class Main extends Application {
         overlay.setPrefSize(300, 250); // Smaller overlay
 
         Text instructionTitle = new Text("📜 How to Play");
-        instructionTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        instructionTitle.setFont(Font.font("Palatino Linotype", FontWeight.BOLD, 18));
         instructionTitle.setFill(Color.WHITE);
 
         Label instructionText = new Label(
-                "🔹 Roll the dice to move around.\n" +
-                        "🔹 Collect clues to find the thief.\n" +
-                        "🔹 Work together to solve the mystery!\n"
+                "🐾 The player who last ate a piece of pie goes first, and turns move left.\n\n" +
+
+                        "🎲 **On Your Turn:**\n" +
+                        " 1️. Declare 'Search for Clues' 🐾 or 'Reveal Suspects' 👀.\n" +
+                        " 2️. Roll three dice to match your action.\n" +
+                        " 3️. You have up to **three attempts** to roll all matching symbols.\n" +
+                        " 4️. If successful, perform your action. Otherwise, the thief moves!\n\n" +
+
+                        "🔎 **Search for Clues**:\n" +
+                        " - Move based on footprints rolled.\n" +
+                        " - If you land on a paw print, draw a clue.\n" +
+                        " - Use the **Clue Decoder** to check the color:\n" +
+                        "     ✅ Green → The thief **has** this item.\n" +
+                        "     ❌ White → The thief **does not** have it.\n" +
+                        " - Compare clues to revealed suspects and eliminate those proven innocent.\n\n" +
+
+                        "🕵️ **Reveal Suspects**:\n" +
+                        " - Flip two suspect cards.\n" +
+                        " - Check if suspects wear **clues marked red**.\n" +
+                        " - Eliminate suspects who **do not** match.\n\n" +
+
+                        "🚨 **Failed Dice Rolls**:\n" +
+                        " If your dice don’t match after three rolls, the **thief moves 3 spaces forward!**\n\n" +
+
+                        "🎯 **Win Condition**:\n" +
+                        " Work together to **find the thief before they escape!** 🦊"
         );
         instructionText.setWrapText(true);
         instructionText.setTextFill(Color.WHITE);
-        instructionText.setFont(Font.font("Arial", 14));
+        instructionText.setFont(Font.font("Palatino Linotype", 14));
 
-        Button closeButton = new Button("Close");
+        Button closeButton = new Button("CLOSE");
         closeButton.setOnAction(e -> overlayPane.setVisible(false)); // Hide the overlay when clicked
 
         overlay.getChildren().addAll(instructionTitle, instructionText, closeButton);
@@ -111,8 +136,8 @@ public class Main extends Application {
                     new Stop(0.1, Color.web("white", 0.75)),
                     new Stop(1.0, Color.web("white", 0.15))
                     );
-            Rectangle bg = new Rectangle(150,30, gradient);
-            Rectangle bg1 = new Rectangle(150,30, Color.web("white", 0.2));
+            Rectangle bg = new Rectangle(200,30, gradient);
+            Rectangle bg1 = new Rectangle(200,30, Color.web("white", 0.2));
 
             FillTransition ft = new FillTransition(Duration.seconds(0.5),
                     bg1, Color.web("black", 0.2),Color.web("white", 0.2));
@@ -143,10 +168,58 @@ public class Main extends Application {
         }
     }
 
-    private void showGameLoading() {
-        Loading gameLoad = new Loading(primaryStage);
-        Scene gameScene = new Scene(gameLoad.showLoadingScene()); // Get the scene from GamePanel
-        primaryStage.setScene(gameScene); // Switch to the new scene
+    private void showPlayerSelection() {
+        // Remove existing PLAY button and replace it with player selection buttons
+        menuBox.getChildren().clear(); // Clear existing menu items
+
+
+
+        // Create new menu items for player selection
+        menuBox = new VBox(5,new MenuItem("2 PLAYERS", () -> startGameWithPlayers(2)),
+                                new MenuItem("3 PLAYERS", () -> startGameWithPlayers(3)),
+                                new MenuItem("4 PLAYERS", () -> startGameWithPlayers(4)),
+                                new MenuItem("BACK", this::showMainMenu));
+
+        menuBox.setTranslateX(375);
+        menuBox.setTranslateY(550);
+
+
+        // Add new options to the menu
+        menuBox.getChildren().addAll();
+        root.getChildren().addAll(menuBox);
+    }
+
+
+    private void startGameWithPlayers(int numPlayers) {
+        System.out.println("Starting game with " + numPlayers + " players...");
+        overlayPane.setVisible(false); // Hide overlay
+        Loading gameLoad = new Loading(primaryStage, numPlayers); // Pass player count to Loading
+        Scene gameScene = new Scene(gameLoad.showLoadingScene());
+        primaryStage.setScene(gameScene);
+    }
+
+    private void showMainMenu() {
+        menuBox.getChildren().clear(); // Remove player selection options
+
+        // Restore original buttons
+
+        menuBox.getChildren().addAll(
+                new MenuItem("   PLAY", this::showPlayerSelection),
+                new MenuItem("   QUIT", Platform::exit)
+        );
+        menuBox.setTranslateX(375);
+        menuBox.setTranslateY(650);
+    }
+
+    public static void returnToMainMenu() {
+        Platform.runLater(() -> { // Ensures UI updates are done on the JavaFX Application Thread.
+            try {
+                Scene mainScene = new Scene(new Main().createContent()); // Reload Main Menu
+                primaryStage.setScene(mainScene); // Switch to main menu
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public static void main(String[] args) {

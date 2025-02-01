@@ -107,23 +107,22 @@ class KeyHandler {
     }
 
     private void checkForClueEncounter() {
-        if (gameMap.isClueLocation(playerRows[currentPlayerIndex], playerCols[currentPlayerIndex])) {
-            System.out.println("Player " + (currentPlayerIndex + 1) + " found a clue at (" + playerRows[currentPlayerIndex] + ", " + playerCols[currentPlayerIndex] + ")");
-            if (gameController != null) {
-                gameController.onClueEncounter(playerRows[currentPlayerIndex], playerCols[currentPlayerIndex]);
-            }
+        int row = playerRows[currentPlayerIndex];
+        int col = playerCols[currentPlayerIndex];
+
+        if (gameMap.isClueLocation(row, col)) {
+            System.out.println("Player " + (currentPlayerIndex + 1) + " found a clue at (" + row + ", " + col + ")");
+            gameController.onClueEncounter(row, col);
+            // Deactivate the clue so it disappears
+            gameMap.deactivateClue(row, col);
         }
     }
+
 
     public void switchTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // Cycle to the next player
         System.out.println("It's now Player " + (currentPlayerIndex + 1) + "'s turn!");
-
         //gameController.notifyPlayerTurn(currentPlayerIndex);
-    }
-
-    public int getCurrentPlayerIndex() {
-        return currentPlayerIndex;
     }
 
 }

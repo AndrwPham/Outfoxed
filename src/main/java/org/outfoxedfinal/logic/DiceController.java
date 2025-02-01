@@ -118,6 +118,7 @@ public class DiceController {
                         gameController.resetSelection();
                        // gameController.isSelectMode(false);
                         rollingDone = true;
+                        gameController.movingDone(0);   // Use movingDone to track if reveal suspect is done
                     }
                     else if (rollCount == MAX_ROLLS) {
                         actionDone = true;
@@ -160,9 +161,9 @@ public class DiceController {
 
     private int getMoveValue(ImageView diceView) {
         String imageName = new File(diceView.getImage().getUrl()).getName();
-        if ("dice1.jpg".equals(imageName)) return 1;
-        if ("dice2.jpg".equals(imageName)) return 2;
-        if ("dice5.jpg".equals(imageName)) return 1;
+        if ("dice1.jpg".equals(imageName)) return 100;
+        if ("dice2.jpg".equals(imageName)) return 200;
+        if ("dice5.jpg".equals(imageName)) return 100;
         return 0;
     }
 

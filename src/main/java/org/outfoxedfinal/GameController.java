@@ -7,6 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import org.outfoxedfinal.entity.Suspect;
 import org.outfoxedfinal.entity.Thief;
@@ -38,6 +40,8 @@ public class GameController {
     private boolean rollingDone = false;
     private boolean actionDone = false;
     private boolean actionPrompt = false;
+    private boolean decodeDone = true; // Keep track of decoding process
+    private boolean isCanceled = false; // Keep track if user cancels the prompt
 
     public GameController(GameMap gameMap, KeyHandler keyHandler,DiceController diceController,OverlayManager overlayManager) {
         this.gameMap = gameMap;
@@ -53,9 +57,15 @@ public class GameController {
 
     public void handleKeyPress(Scene scene) {
         scene.setOnKeyPressed(event -> {
-            System.out.println("Key event detected: " + event.getCode());
-            keyHandler.handleMovement(event); // Delegate to KeyHandler
-
+            switch (event.getCode()) {
+                case T -> {
+                    if (isCanceled) {
+                        showActionPrompt(); // Reopen action prompt
+                        isCanceled = false;
+                    }
+                }
+                default -> keyHandler.handleMovement(event); // Handle other keys normally
+            }
         });
     }
 
@@ -94,7 +104,10 @@ public class GameController {
             cancelButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
             cancelButton.setOnMouseEntered(e -> cancelButton.setStyle("-fx-background-color: darkred; -fx-text-fill: white;"));
             cancelButton.setOnMouseExited(e -> cancelButton.setStyle("-fx-background-color: red; -fx-text-fill: white;"));
-            cancelButton.setOnAction(e -> overlayManager.removeOverlay());
+            cancelButton.setOnAction(e -> {
+                isCanceled = true;
+                overlayManager.removeOverlay();
+            });
 
             // Arrange buttons in a vertical box
             VBox vbox = new VBox(20, title, revealButton, clueButton, cancelButton);
@@ -139,12 +152,8 @@ public class GameController {
         }
 
         if (gameMap.getThief().equals(suspect)) {
-            System.out.println("Correct! " + suspect.getName() + " is the thief! YOU WIN!");
-            //showWinMessage(suspect.getName()); // Call win message method
             showGameEndOverlay(suspect.getName(),true);
         } else {
-            System.out.println("Incorrect accusation! " + suspect.getName() + " is not the thief.");
-            //showLoseMessage(suspect.getName());
             showGameEndOverlay(suspect.getName(),false);
         }
     }
@@ -202,10 +211,12 @@ public class GameController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Decoder.fxml"));
             Parent decoderRoot = loader.load();
-
+            decodeDone = false;
             Decoder decoder = loader.getController();
             decoder.setClueItems(gameMap.getClueItemsAtLocation(row, col));
             decoder.setThiefItems(thief.getThiefItems());
+            decoder.setOverlayManager(overlayManager);
+            decoder.setGameController(this);
 
             overlayManager.createOverlay(decoderRoot);
         } catch (Exception e) {
@@ -241,19 +252,23 @@ public class GameController {
     public void movingDone(int moving){
         if (moving ==0){
             movingDone = true;
+
         }
     }
-    public boolean actionDone(boolean action){
+    public void actionDone(boolean action){
         System.out.println("actionDone: " + action);
         actionDone = action;
-        return actionDone;
+
     }
-    public boolean rollingDone(boolean rolling){
+    public void rollingDone(boolean rolling){
         System.out.println("rollingDone: " + rolling);
         rollingDone = rolling;
-        return rollingDone;
-    }
 
+    }
+    public void isDecodeDone(boolean decode){
+        System.out.println("isDecodeDone: " + decode);
+        decodeDone = decode;
+    }
     //GameLoop
     public void updateGameLogic() {
         if (!actionPrompt && selectedSuspectsCount == 2) {
@@ -266,17 +281,16 @@ public class GameController {
             actionDone = false;
             keyHandler.switchTurn();
         }
-        if (movingDone){
-            renderUpdates();
-            actionPrompt = false;
-            movingDone = false;
-            keyHandler.switchTurn();
-
+        if (movingDone) {
+            if (decodeDone) {
+                actionPrompt = false;
+                movingDone = false;
+                keyHandler.switchTurn();
+            }
         }
-//        if (getLocation(14,17)){
-//            System.out.println("You've lost");
-//
-//        }
+        if (getLocation(14, 17)) {
+            showGameEndOverlay(null, false); // Thief escaped, game over
+        }
 
     }
 
@@ -315,11 +329,30 @@ public class GameController {
 
     private void showGameEndOverlay(String suspectName, boolean isWinner) {
         // Game result message
-        Text message = new Text(isWinner
-                ? "🎉 YOU WIN! " + suspectName + " was the thief! 🎉"
-                : "❌ WRONG ACCUSATION! " + suspectName + " is NOT the thief.");
-        message.setFont(new Font(30));
-        message.setFill(Color.WHITE);
+        Text messageLine1;
+        Text messageLine2;
+
+        if (suspectName == null) {
+            messageLine1 = new Text("🦊 The thief has gotten away\n");
+            messageLine2 = new Text("and ate all the cakes! 🍰");
+        } else {
+            String resultMessage = isWinner
+                    ? "🎉 YOU WIN! " + suspectName + " was the thief! 🎉"
+                    : "❌ WRONG ACCUSATION! " + suspectName + " is NOT the thief.";
+            messageLine1 = new Text(resultMessage);
+            messageLine2 = new Text(""); // No second line if there's a suspect name
+        }
+
+        messageLine1.setFont(new Font(30));
+        messageLine1.setFill(Color.WHITE);
+
+        messageLine2.setFont(new Font(30)); // Keep the second line the same size
+        messageLine2.setFill(Color.WHITE);
+
+        TextFlow textFlow = new TextFlow(messageLine1, messageLine2);
+        textFlow.setTextAlignment(TextAlignment.CENTER); // Center text alignment
+        textFlow.setMaxWidth(400); // Ensure it wraps nicely
+        textFlow.setLineSpacing(5); // Add spacing between lines
 
         // Load an image based on result
         String imagePath = isWinner ? "win.jpg" : "lose.jpg";
@@ -336,7 +369,7 @@ public class GameController {
         }
 
         // Restart button
-        Button restartButton = new Button("Restart Game");
+        Button restartButton = new Button("Return to Menu Game");
         restartButton.setFont(new Font(18));
         restartButton.setStyle("-fx-background-color: white; -fx-text-fill: black;");
         restartButton.setOnMouseEntered(e -> restartButton.setStyle("-fx-background-color: gray; -fx-text-fill: white;"));
@@ -347,7 +380,7 @@ public class GameController {
         });
 
         // Layout for message, image & button
-        VBox vbox = new VBox(20, resultImage, message, restartButton);
+        VBox vbox = new VBox(20, resultImage, textFlow, restartButton);
         vbox.setAlignment(Pos.CENTER);
 
         // **Use overlayManager to create the overlay**
@@ -357,6 +390,8 @@ public class GameController {
 
     private void restartGame() {
 
+        // **Return to Main Menu Using Static Method**
+        Main.returnToMainMenu();
     }
 
 
