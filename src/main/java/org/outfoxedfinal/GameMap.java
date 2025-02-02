@@ -75,6 +75,9 @@ public class GameMap extends TilePane {
         clue.deactivateClue(row, col);
     }
 
+    public boolean isClueActive(int row, int col) {
+        return clue.isClueActive(row, col);
+    }
     public int getRows() {
         return rows;
     }

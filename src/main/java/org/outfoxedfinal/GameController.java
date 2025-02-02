@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import org.outfoxedfinal.logic.Clue;
 import org.outfoxedfinal.logic.Decoder;
 import org.outfoxedfinal.logic.DiceController;
 
@@ -208,6 +209,9 @@ public class GameController {
         }
     }
     public void onClueEncounter(int row, int col) {
+        if (!gameMap.isClueActive(row, col)) {
+            return; // Ignore if the clue is already deactivated
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Decoder.fxml"));
             Parent decoderRoot = loader.load();
@@ -215,6 +219,7 @@ public class GameController {
             Decoder decoder = loader.getController();
             decoder.setClueItems(gameMap.getClueItemsAtLocation(row, col));
             decoder.setThiefItems(thief.getThiefItems());
+            decoder.setClueLocation(row, col, gameMap);
             decoder.setOverlayManager(overlayManager);
             decoder.setGameController(this);
 

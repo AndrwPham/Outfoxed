@@ -69,20 +69,25 @@ public class Clue {
     // Deactivate Clue When Stepped On
     public void deactivateClue(int row, int col) {
         int[] center = getClueCenter(row, col);
+
         if (center != null) {
-            activeClues.put(center[0] + "," + center[1], false);
+            int centerRow = center[0];
+            int centerCol = center[1];
+
+            // Now deactivate all 4 squares of the clue
+            activeClues.put(centerRow + "," + centerCol, false);
+            activeClues.put((centerRow + 1) + "," + centerCol, false);
+            activeClues.put(centerRow + "," + (centerCol + 1), false);
+            activeClues.put((centerRow + 1) + "," + (centerCol + 1), false);
         }
     }
 
     // Check if a Clue is Still Active
     public boolean isClueActive(int row, int col) {
-        return activeClues.getOrDefault(row + "," + col, false);
+        int[] center = getClueCenter(row, col);
+        return center != null && activeClues.getOrDefault(center[0] + "," + center[1], false);
     }
 
-    // Returns Clue Centers
-    public List<int[]> getClueCenters() {
-        return clueCenters;
-    }
 
     // Check if a Tile is Part of Any Clue
     public boolean isClueLocation(int row, int col) {

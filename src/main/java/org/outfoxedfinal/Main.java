@@ -175,7 +175,8 @@ public class Main extends Application {
 
 
         // Create new menu items for player selection
-        menuBox = new VBox(5,new MenuItem("2 PLAYERS", () -> startGameWithPlayers(2)),
+        menuBox = new VBox(5,new MenuItem("1 PLAYER     ", () -> startGameWithPlayers(1)),
+                                new MenuItem("2 PLAYERS", () -> startGameWithPlayers(2)),
                                 new MenuItem("3 PLAYERS", () -> startGameWithPlayers(3)),
                                 new MenuItem("4 PLAYERS", () -> startGameWithPlayers(4)),
                                 new MenuItem("BACK", this::showMainMenu));

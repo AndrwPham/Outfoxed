@@ -24,6 +24,7 @@ import java.util.*;
 public class GamePanel {
     private final List<Text> players = new ArrayList<>();
     private int numPlayers;
+    String[] playerIcons = {"🎩", "🦉", "🦡", "🦊"};
 
     public GamePanel(int numPlayers) {
         this.numPlayers = numPlayers;
@@ -40,14 +41,14 @@ public class GamePanel {
         ImageView imgMap = new ImageView(img);
         imgMap.setFitHeight(650);
         imgMap.setFitWidth(650);
-        double cellWidth = imgMap.getFitWidth() / 18;  // Assuming 18 columns
-        double cellHeight = imgMap.getFitHeight() / 18; // Assuming 18 rows
+        double cellWidth = imgMap.getFitWidth() / 18;  // 18 columns
+        double cellHeight = imgMap.getFitHeight() / 18; // 18 rows
         double xOffset =  cellWidth * 1 + cellWidth / 2; // Column index 0
         double yOffset = cellHeight * 0 + cellHeight / 2; // Row index 1 // Row index 1
         imgMap.setPreserveRatio(true);
         int[][] playerPositions = {{9, 9}, {8, 9}, {8, 8}, {9, 8}};
         for (int i = 0; i < numPlayers; i++) {
-            Text player = new Text("🎩");
+            Text player = new Text(playerIcons[i]);
             player.setFont(new Font(15));
             player.setTranslateX((playerPositions[i][1] * cellWidth) - imgMap.getFitWidth() / 2);
             player.setTranslateY((playerPositions[i][0] * cellHeight) - imgMap.getFitHeight() / 2);
